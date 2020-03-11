@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ページタイトル</title>
+<!--JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<!--VUe UIフレームワーク Vuetify(CDN)関連 headタグ用--->
+<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet"><!--Googleフォントの「Roboto」をリンク-->
+<link href="https://cdn.jsdelivr.net/npm/@mdi/font@3.x/css/materialdesignicons.min.css" rel="stylesheet"><!--アイコンフォント「materialdesignicons」をリンク-->
+<link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet"><!--Vuetifyデフォルトのスタイル設定「vuetify.css」をリンク-->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui"><!--レスポンシブデザイン用のvuewport設定-->
+</head>
+ 
+<body>
+<!--全体をVuetify設定-->
+<div id="Vuetify">
+<v-app><!--vuetify使用-->
+    <v-navigation-drawer app v-model="drawer" clipped>Navigation Lists</v-navigation-drawer> <!--v-navigationにclipped v-app-barにclipped-leftでナビ下に入る-->
+    <v-card class="overflow-hidden">
+    <v-app-bar  dark app clipped-left  
+    dark
+    src="https://cdn.pixabay.com/photo/2017/06/04/16/33/road-2371503_960_720.jpg"
+    > 
+
+
+        <v-app-bar-nav-icon  @click="drawer=!drawer"></v-app-bar-nav-icon> <!---ハンバーガーメニュー-->
+        <v-toolbar-title>ポートフォリオ</v-toolbar-title>
+
+        <v-spacer></v-spacer> <!--間を入れる-->
+        <v-toolbar-items> <!--マウスオーバークリックのためのタグ-->
+            <v-btn text>For Enterprise</v-btn>
+
+              <!--ドロップダウンメニューの設定-->
+            <v-menu offset-y>
+              <template v-slot:activator="{on}"><!--menuとtemplateのなかに入れる-->
+              <v-btn v-on="on" text>Support<v-icon>mdi-menu-down</v-icon></v-btn>
+              </template>
+
+              <v-list> <!--ドロップダウンのメニューのリストを表示-->
+                <v-subheader>Get help</v-subheader> <!--リストのヘッダ表示-->
+                <v-list-item v-for="support in supports" :key="support"> <!--v-list-itemのなかにcontentの中にtitle入れるfor-inで繰り返し表示-->
+
+                 <v-list-item-content>
+                  <v-list-item-title>{{ support }}</v-list-item-title>
+                 </v-list-item-content>
+
+                </v-list-item>
+              </v-list>
+            </v-menu>
+
+        </v-toolbar-items>
+    </v-app-bar>
+    </v-card>
+<br><br>
+<br><br>
+<!---ラジオボタンでのタブメニュー-->
+<!---あとで画像表示と遷移フローもおわらせる-->
+
+<div class="vue_radio" >
+  <div class="tabs">
+    <input type="radio" id="tab1" name="tab" value="1" v-model="isActive" v-show="!isActive"><!--isActiveのfalseでラジオボタン非表示。常に値が入ってるため常に非-->
+    <label for="tab1">タブ1</label>
+    <input type="radio" id="tab2" name="tab" value="2" v-model="isActive" v-show="!isActive">
+    <label for="tab2">タブ2</label>
+    <input type="radio" id="tab3" name="tab" value="3" v-model="isActive" v-show="!isActive">
+    <label for="tab3">タブ3</label>
+  </div>
+
+  <ul class="contents" >
+    <li v-if="isActive === '1'">コンテンツ1コンテンツ1コンテンツ1コンテンツ1oooooooooooooooooooooooooooooooooooooooo</li>
+    <li v-else-if="isActive === '2'">コンテンツ2コンテンツ2コンテンツ2コンテンツ2</li>
+    <li v-else-if="isActive === '3'">コンテンツ3コンテンツ3コンテンツ3コンテンツ3</li>
+  </ul>
+</div>
+
+
+<v-card width="500px" class="mx-auto mt-5">
+<!---axios表示-->
+    <v-card-title>
+        <h1 class="display-1">Todoアプリ
+        </h1>
+      </v-card-title>
+
+      <!---検索-->
+    <p>日付検索</p>
+    <input  type="text" v-model="text_data" v-on:keyup.enter="exe" style="border: 1px solid #0066ff;">
+
+   <input type="submit" value="search" v-on:click="exe">
+   <hr>
+
+   <!--並び変え（ソート）--->
+   <input type="button" value="日付並び替え" style="border:1px solid #888;" v-on:click="sort">
+   <!---並び替えできていないので訂正-->
+   <p  v-show="flg">昇順に並べ替える</p>
+   <p  v-show="!flg">降順に並べ替える</p>
+
+   <!--追加フォーム-->
+   <!--フォームからファイルを送信するときのおまじないformにつけないと怒られる
+   enctype="multipart/form-data"
+   -->
+  <form action="/api" method="post"  enctype="multipart/form-data">
+    <p>登録フォーム</p>
+    <table border="0">
+
+     <tr>
+       <th>day(日付-Number-)</th>
+       <td><input placeholder="Your age" name="day" v-model="text_day" style="border: 1px solid #0066ff;"></td>
+     </tr>
+
+     <tr>
+      <th>name(タイトル-文字列-)</th>
+      <td><input placeholder="Your name" name="name" v-model="text_name"  style="border: 1px solid #0066ff;"><td>
+    </tr>
+
+    <tr>
+      <th>img(画像-文字列*のちのち画像投稿にする*-)</th>
+      <td>
+        
+        <div class="input-item">
+          <label v-show="!uploadedImage" class="input-item__label"
+      >画像を選択
+      <input type="file" @change="onFileChange"  v-model="text_img" name="img"/>
+    </label>
+        </div>
+
+        <div class="preview-item">
+          <img
+            v-show="uploadedImage"
+            class="preview-item-file"
+            :src="uploadedImage"
+            alt=""
+          />
+          <div v-show="uploadedImage" class="preview-item-btn" @click="remove">
+            <p class="preview-item-name">{{ img_name }}</p>
+            <e-icon class="preview-item-icon">close</e-icon>
+          </div>
+        </div>
+    
+        <!--<input placeholder="Your name" name="img" v-model="text_img"  style="border: 1px solid #0066ff;">-->
+      <td>
+    </tr>
+
+    <tr>
+      <th>client(クライアント側構成-文字列-)</th>
+      <td><input placeholder="Your name" name="client" v-model="text_client"  style="border: 1px solid #0066ff;"><td>
+    </tr>
+
+    <tr>
+      <th>server(サーバー側構成-文字列-)</th>
+      <td><input placeholder="Your name" name="server" v-model="text_server"  style="border: 1px solid #0066ff;"><td>
+    </tr>
+
+     <tr>
+       <td><button v-if="text_day&&text_name&&text_img&&text_client&&text_server" style="background-color:moccasin;">登録</button></td>
+     </tr>
+
+    </table>
+   </form>
+   <hr>
+<!--リスト-->
+  <ul>
+    <li v-for="user in users">日付：{{ user.day}}名前：{{ user.name }}画像：{{ user.img}}クライアント側：{{ user.client }}サーバー側：{{ user.server }}
+        <v-btn v-on:click="deleteUser(user.day)" style="background-color:moccasin;">削除</v-btn>
+      </li> 
+  </ul>
+
+
+</v-card>
+
+<!--カード一覧-->
+<v-card class="mt-4 mb-4 pa-3">
+<h1 v-show="!showSearch">一覧</h1>
+<h1 v-show="showSearch">検索結果</h1>
+
+<v-layout row wrap>
+
+<!---全表示（デフォルト）-->
+<div v-for="user in users" style="text-align: center;" v-show="!showSearch">
+<v-card class="grey lighten-3 ma-2" v-on:click="openModal" >
+<div class="device" >
+
+  <!--
+    img srcにはHTML属性内ではマスタッシュ{{}}は使えない
+    なので、この場合は v-bind ディレクティブを使う。
+
+  -->
+    <img v-bind:src="user.img">
+    <p>{{ user.name }}</p>
+    <p>{{ user.day }}</p>
+    <p>{{ user.client }}</p>
+    <p>{{ user.server }}</p>
+</div>
+</v-card>
+</div>
+
+
+<!---検索結果-->
+<div v-for="searched in searchs" style="text-align: center;" v-show="showSearch">
+  <v-card class="grey lighten-3 ma-2" v-on:click="openModal" >
+  <div class="device" >
+
+    <img v-bind:src="searched.img">
+    <p>{{ searched.name }}</p>
+    <p>{{ searched.day }}</p>
+    <p>{{ searched.client }}</p>
+    <p>{{ searched.server }}</p>
+  </div>
+  </v-card>
+  </div>
+
+
+</v-layout>
+
+</v-card>
+
+<!-------WebAPI取得--------------------------------------->
+<!--Instagram Graph APIを用いて画像up-->
+<div id="instafeed"></div>
+
+
+<!--Qiita投稿-->
+<h1>Qiita API</h1>
+<v-card width="800px" class="mx-auto mt-5" style="text-align: center;">
+  <v-card-title>
+    Qiita投稿
+  </v-card-title>
+  <p>Markdownの書き方(チートシート)</p>
+   <a href="https://qiita.com/Qiita/items/c686397e4a0f4f11683d">チートシートリンク</a>
+  <form action="/qiita" method="POST"><br>
+     <input type="text" placeholder="タイトル" name="title" style="background-color:beige;"><br>
+     <input type="text" placeholder="タグ" name="tags" style="background-color: beige;"><br>
+     <textarea name="body" placeholder="内容" style="width: 600px;height: 200px; background-color:beige;"></textarea><br>
+     <v-btn >投稿</v-btn>
+  </form>
+
+</v-card>
+
+
+<!---Qiita取得-->
+
+<v-card width="800px" class="mx-auto mt-5" >
+
+  <v-card-title>
+    Qiita投稿検索
+  </v-card-title>
+
+  <input type="text" placeholder="ユーザーID" v-model="Qiita_user">
+
+  <!--v-cardなのにbuttonだからエラーというか不良-->
+  <v-btn v-on:click="qiita_search">検索</v-btn>
+
+<ul>
+  <li v-for="post in Qiita" >
+   
+      <span class="tag" v-for="tag in post.tags">{{ tag.name }}</span>
+      
+      <a v-bind:href="post.url" target="_blank" rel="noopener noreferrer">
+        <div>{{ post.title }}</div>
+      </a>
+  </li>
+</ul>
+
+</v-card>
+
+
+
+<!---モーダルウィンドウ-->
+<!--オーバーレイの中心にコンテンツを表示させる設定を行います。id=”content”のdiv要素を追加し、p要素とbutton要素を追加します。-->
+<!---オーバーレイはモーダルウィンドウが開いた時に画面全体を覆う薄暗い要素です-->
+
+<transition>
+  <div id="overlay" v-show="showContent">
+    <div id="content">
+        <p>ここにコメントを用意する</p>
+        
+
+      <!--closeだけでなくウィンドウの背景のどこをクリックしても閉じるにはoverlayにcloseModalのイベント設定-->
+         <p><button v-on:click="closeModel">close</button></p>
+    </div>
+  </div>
+</transition> 
+
+<br>
+<br>
+<br>
+<br>
+
+
+<!--フッター-->
+<v-footer  dark app >
+    copylight @N.K
+  <v-btn><v-icon>mdiAccount</v-icon></v-btn>
+</v-footer>
+
+
+</v-app><!--v-app使用タグ-->
+</div> <!--Vuetify設div-->
+
+
+
+
+
+
+
+<!--VUe UIフレームワーク Vuetify(CDN)関連 bodyタグ用--->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<!--axios(CDN) Vueにhttpリクエスト機能追加--->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<!---Vue.js----------------------------------------------------------------------------------------------------->
+<script>
+/*mongoose
+ day :Number, //データ日付
+  name:String, //名前 タイトル
+  img: String, //jpegソース タイトル画像
+  client:String, //クライアント側 どのような構成か
+  server:String, //サーバー側はどのような構成か
+*/
+//document.getElementById("mypic").src = "img/test1.jpg";
+
+//Vuetify 設定
+new Vue({
+  el:'#Vuetify',
+  vuetify: new Vuetify(), //vuetifyオプションでVuetifyインスタンス作成
+
+  data:{
+    isActive: '1',      //ラジオボタンでのタブ切り替え
+    flg: true,          //並べ替え表示フラグ
+    Qiita_user:'',      //QiitaのユーザーID inputとバインディング
+    Qiita:[],           //Qiitaの投稿データ
+    uploadedImage: '',
+    img_name: '',
+    users:[],           //apiページのmongoDBの中身をすべて入れる配列
+    showSearch: false,  //デフォルトは全表示、trueになると検索結果を表示
+    searchs:[],         //年齢検索結果を格納
+    text_name:'',       //登録inputのタイトル
+    text_day:'',        //登録inputの日付
+    text_img:'',       //登録inputの画像
+    text_client:'',         //登録inputのクライアント側の構成
+    text_server:'',        //登録inputのサーバー側の攻勢
+    text_data:'',       //年齢検索テキストinputタグ
+    showContent: false, //モーダルウィンドウの表示
+    drawer: false,      //サブメニューの表示
+    supports:[          //ドロップダウンメニューのリストの中身
+    'Consulting and suppourt',
+          'Discord community',
+          'Report a bug',
+          'Github issue board',
+          'Stack overview'
+    ]
+  },
+
+  methods:{
+    //写真アップロード
+    onFileChange(e) {
+      const files = e.target.files || e.dataTransfer.files; 
+      this.createImage(files[0]); 
+      this.img_name = files[0].name; //ファイル名を取得します。
+    },
+    // アップロードした画像を表示
+    createImage(file) {
+      const reader = new FileReader(); //PC内にあるファイルやバッファ上の生データに対して、読み取りアクセスを行えるオブジェクト
+      reader.onload = e => {
+        this.uploadedImage = e.target.result; 
+      };
+      reader.readAsDataURL(file); //指定された Blob ないし File オブジェクトを読み込むために使用します。
+    },  
+    remove() {
+      this.uploadedImage = false;
+    },
+    //並び変え
+    sort:function(){
+      //昇順（小さいものから上昇順 もう一度押すと降順 切り替え
+      //usersのdayを指定し早い順に並び替え
+      this.users.sort((a,b)=>{
+         if(a.day<b.day) return -1;
+         if(a.day>b.day) return -1; //本来なら1。押して昇降切り替えるときは-1。
+         return 0;
+      });
+      this.flg = !this.flg; //押されるたびfalse要素を入れるため切り替え
+    },
+    qiita_search:function(){
+    //Qiita API 
+    /*スコープ
+    read_qiita : Qiitaからデータを取得出来る
+    read_qiita_team : Qiita:Teamからデータを取得できる
+    write_qiita : Qiitaに投稿を書き込める
+    write_qiita_team : Qiita:Teamに投稿を書き込める 
+    */
+    //axios.get('https://l0lnp1f6p2.execute-api.ap-northeast-1.amazonaws.com/default/extend_qiita_api?token=a25751249d605e3e71a82cfbf5cf71ea7feeb5de&page=1&per_page=20')
+    axios.get( `https://qiita.com/api/v2/users/${this.Qiita_user}/items` ) //ユーザーIDは@なし m_mitsuhide
+    .then(res=> this.Qiita = res.data)
+
+    .catch(res=> console.log(res))
+    },
+
+   exe:function(){ //検索結果のみDB表示
+     axios.get(`api/${this.text_data}`)
+     .then(res => this.searchs = res.data)
+     .catch(res => console.log(res))
+     alert("検索しました")
+     this.showSearch = true;
+   },
+   deleteUser:function(user_data){ //削除通知
+     axios.delete(`api/${user_data}`) //これでageの情報を受け取ってExpressにてdeleteされる
+     // reloadメソッドによりページをリロード (deleteさせただけでページ遷移してるわけじゃないので消されたかどうか確認できないためあえてリロードさせる)
+     window.location.reload();
+   },
+   openModal:function(){ 
+     this.showContent = true
+   },
+   closeModel:function(){
+     this.showContent = false
+   }
+
+  },
+
+  mounted:function(){  //ウェブに表示
+    //expressからのmongoDB表示
+    
+    axios.get('/api') //URL取得 GETなので受け取るのみ
+    .then(res => this.users = res.data
+    ) //成功時
+    .catch(res => console.log(res)) //エラー時
+
+  }
+})
+
+
+//jquery
+$(function(){
+	$.ajax({
+		type: 'GET',
+		url: 'https://graph.facebook.com/v3.0/17841430739967729?fields=name%2Cmedia.limit(9)%7Bcaption%2Clike_count%2Cmedia_url%2Cpermalink%2Ctimestamp%2Cusername%7D&access_token=EAAHKLCIpp1oBAEjryrw9yZCQkNCiFQSD9qVPrv86LdsQnR5OflIRANoSEN8ZAZAmliQ8I6f3fO9lF7tB1IWVkaCCsLyLg1bTIMsMZBBfPHP1aqLkXqlYFD15gZCyGOeBa02fPliaHIoO9cIVf18t3IIsFLHqZAmylVqyqGtK3OJKAJd8VJKWlSisEPFcCinx4ZD',
+		dataType: 'json',
+		success: function(json) {
+		    	
+		    var html = '';
+		    var insta = json.media.data;
+		    for (var i = 0; i < insta.length; i++) {
+          html += '<div ><a href="' + insta[i].permalink + '" target="_blank"><img src="' + insta[i].media_url + '"></a></div>';
+		    }
+		      $("#instafeed").append(html);			
+		},
+		error: function() {
+ 
+		//エラー時の処理
+		}
+	});
+});	
+
+</script>
+
+
+<!---CSS(Vuetify以外で使用）----------------------------------------------------------------------------------------------------->
+<style scoped>
+  /*トランジション*/
+  .v-enter-active, .v-leave-active {
+    transition: opacity .7s /*.5*/
+  }
+  
+  .v-enter, .v-leave-to {
+    opacity: 0
+  }
+
+
+
+
+h1 {
+  text-align: center;
+}
+/*デバイスcss*/
+.device {
+   /*display: table-cell;*/
+   display:inline-block;
+    height: 400px;
+    background-color:white;
+}
+/*imgタグ*/
+img {
+    margin-left: 35px;/*24*/
+    margin-right: 35px;/*24*/
+    margin-top: 10px;
+    height: 200px;
+    width: 250px;
+    border: solid 1px;
+}
+
+/*
+.scroll_wrapper {
+  text-align: center;
+  overflow-x: scroll;
+  width: 1300px;
+
+}
+
+.scroll_inner {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 0;
+}
+*/
+
+
+/*
+z-indexは要素を重ねた時の順番を表しています。小さな数字ほど重ね順が下になります。
+overlayは画面を薄暗くする要素のため1を設定しています。オーバーレーの上に表示させる要素には1よりも大きなz-indexの値を設定します。
+
+position:fixedからの設定が画面全体を覆うオーバーレイの主要部分を表しています。
+この部分を追加するだけで透明度0.5の黒い要素が画面全体を覆います。
+
+display:flexはフレックスボックスの設定でここでの設定はオーバーレイの中の要素すべてが画面中央に表示されるように設定しています。
+この設定は後ほどのoverlayの中への子要素の追加ではっきり理解することができます。
+*/
+#overlay{
+  /*　要素を重ねた時の順番　*/
+  z-index:1;
+
+  /*　画面全体を覆う設定　*/
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background-color:rgba(0,0,0,0.5);
+
+  /*　画面の中央に要素を表示させる設定　*/
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+/*
+overlayの要素よりも上に表示させるためz-index=”2″を設定し、幅は画面の50%で背景は白に設定します。
+*/
+#content{
+  z-index:2;
+  width:50%;
+  padding: 1em;
+  background:#fff;
+}
+
+
+/*画像アップロードボタン*/
+label > input {
+  display: none;
+}
+
+label {
+  padding: 0 1rem;
+  border: solid 1px #888;
+} 
+
+label::after {
+  content: '+';
+  font-size: 1rem;
+  color: #888;
+  padding-left: 1rem;
+}
+
+/*qiita css*/
+li {
+        margin-bottom: 15px;
+        line-height: 1.5;
+
+       
+
+       
+    }
+
+    a {
+            color: darken( #7daaca, 24% );
+        }
+
+    .tag {
+            display: inline-block;
+            margin: 0 1px 6px;
+            padding: 2px 6px;
+            color: #fff;
+            font-size: 0.75rem;
+            background:orange; /*#7daaca*/
+        }
+
+/*タブcss*/
+.tabs {
+    overflow: hidden;
+  }
+  .tabs li,
+  .tabs label {
+    float: left;
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: .3s;
+  }
+  .tabs li:not(:first-child),
+  .tabs label:not(:first-of-type) {
+    border-left: none;
+  }
+  .tabs li.active,
+  .tabs :checked + label {
+    background-color: #000;
+    border-color: #000;
+    color: #fff;
+    cursor: auto;
+  }
+  .contents{
+    overflow: hidden;
+    margin-top: -1px;
+  }
+  .contents li {
+   /* width: 320px;*/
+    padding: 20px;
+    border: 1px solid #ccc;
+  }
+</style>
+</body>
+</html>
